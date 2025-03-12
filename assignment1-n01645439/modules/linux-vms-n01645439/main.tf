@@ -1,27 +1,3 @@
-locals {
-  extensions_for_each_vm = flatten([
-    for vm_name, vm_config in var.vm_config : [
-      for extension in var.vm_extensions : {
-        vm_name   = vm_name
-        extension = extension
-      }
-    ]
-  ])
-}
-
-resource "random_id" "boot_diag" {
-  byte_length = 4
-}
-
-resource "azurerm_storage_account" "boot_diag" {
-  name                     = "bootdiag${random_id.boot_diag.hex}"
-  location                 = var.location
-  resource_group_name      = var.rg_name
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  tags                     = var.tags
-}
-
 resource "azurerm_availability_set" "availability_set" {
   name                         = var.availability_set_name
   location                     = var.location
@@ -86,29 +62,39 @@ resource "azurerm_linux_virtual_machine" "linux_vm" {
   }
 
   source_image_reference {
-    publisher = each.value.source_image_reference.publisher
-    offer     = each.value.source_image_reference.offer
-    sku       = each.value.source_image_reference.sku
-    version   = each.value.source_image_reference.version
-  }
-  
 
+    publisher = "OpenLogic"
+    offer     = "CentOS"
+    sku       = "8_2"
+    version   = "latest"
+  }
 
   boot_diagnostics {
-    storage_account_uri = azurerm_storage_account.boot_diag.primary_blob_endpoint
+    storage_account_uri = var.storage_account_uri
   }
 
   tags = var.tags
 }
 
-resource "azurerm_virtual_machine_extension" "linux_extensions" {
-  for_each = { for idx, ext in local.extensions_for_each_vm : idx => ext }
+resource "azurerm_virtual_machine_extension" "linux_extensions_1" {
+  for_each             = var.vm_config
+  name                 = "NetworkWatcherExtension"
+  virtual_machine_id   = azurerm_linux_virtual_machine.linux_vm[each.key].id
+  publisher            = "Microsoft.Azure.NetworkWatcher"
+  type                 = "NetworkWatcherAgentLinux"
+  type_handler_version = "1.4"
 
-  name                 = each.value.extension.name
-  virtual_machine_id   = azurerm_linux_virtual_machine.linux_vm[each.value.vm_name].id
-  publisher            = each.value.extension.publisher
-  type                 = each.value.extension.type
-  type_handler_version = each.value.extension.type_handler_version
+  depends_on = [azurerm_linux_virtual_machine.linux_vm]
+  tags       = var.tags
+}
+
+resource "azurerm_virtual_machine_extension" "linux_extensions_2" {
+  for_each             = var.vm_config
+  name                 = "AzureMonitorExtension"
+  virtual_machine_id   = azurerm_linux_virtual_machine.linux_vm[each.key].id
+  publisher            = "Microsoft.Azure.Monitor"
+  type                 = "AzureMonitorLinuxAgent"
+  type_handler_version = "1.9"
 
   depends_on = [azurerm_linux_virtual_machine.linux_vm]
   tags       = var.tags

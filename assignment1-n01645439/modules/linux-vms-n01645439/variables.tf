@@ -24,7 +24,6 @@ variable "availability_set_name" {
 variable "admin_username" {
   description = "Admin username for the VMs"
   type        = string
-  default     = "adminuser"
 }
 
 variable "private_key_path" {
@@ -47,7 +46,7 @@ variable "vm_extensions" {
     type                 = string
     type_handler_version = string
   }))
-  default =  [
+  default = [
     {
       name                 = "NetworkWatcherExtension"
       publisher            = "Microsoft.Azure.NetworkWatcher"
@@ -65,50 +64,23 @@ variable "vm_extensions" {
 variable "vm_config" {
   description = "Configuration for each VM"
   type = map(object({
-    size = string
-    source_image_reference = object({
-      publisher = string
-      offer     = string
-      sku       = string
-      version   = string
-    })
+    size              = string
     domain_name_label = string
-    assign_public_ip  = bool
   }))
   default = {
-    "5439-linux-1" = {
-      size = "Standard_B1s"
-      source_image_reference = {
-       publisher = "OpenLogic"
-        offer     = "CentOS"
-        sku       = "8_2"
-        version   = "latest"
-      }
-      domain_name_label = "linux1-5439"
-      assign_public_ip  = true
+    "5439-linux-vm-1" = {
+      size              = "Standard_B1s"
+      domain_name_label = "n01645439-cnt-vm-1"
     },
-    "5439-linux-2" = {
-      size = "Standard_B1s"
-      source_image_reference = {
-       publisher = "OpenLogic"
-        offer     = "CentOS"
-        sku       = "8_2"
-        version   = "latest"
-      }
-      domain_name_label = "linux2-5439"
-      assign_public_ip  = true
+    "5439-linux-vm-2" = {
+      size              = "Standard_B1s"
+      domain_name_label = "n01645439-cnt-vm-2"
     },
-    "5439-linux-3" = {
-      size = "Standard_B1s"
-      source_image_reference = {
-       publisher = "OpenLogic"
-        offer     = "CentOS"
-        sku       = "8_2"
-        version   = "latest"
-      }
-      domain_name_label = "linux3-5439"
-      assign_public_ip  = true
-    }
+    "5439-linux-vm-3" = {
+      size              = "Standard_B1s"
+      domain_name_label = "n01645439-cnt-vm-3"
+    },
+
   }
 }
 
@@ -116,4 +88,9 @@ variable "tags" {
   description = "Tags for the resources"
   type        = map(string)
   default     = { "environment" = "dev", "owner" = "5439" }
+}
+
+variable "storage_account_uri" {
+  description = "URI of the storage account for boot diagnostics"
+  type        = string
 }

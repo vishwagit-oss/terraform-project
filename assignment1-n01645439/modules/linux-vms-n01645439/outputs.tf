@@ -18,7 +18,17 @@ output "vm_public_ips" {
   value       = values(azurerm_public_ip.public_ip)[*].ip_address
 }
 
-output "storage_account_name" {
-  description = "Name of the storage account used for boot diagnostics"
-  value       = azurerm_storage_account.boot_diag.name
+output "vm_fqdns" {
+  description = "The FQDNs of the Linux virtual machines"
+  value       = values(azurerm_public_ip.public_ip)[*].fqdn
+}
+
+output "vm_ids" {
+  description = "The IDs of the Linux virtual machines"
+  value       = values(azurerm_linux_virtual_machine.linux_vm)[*].id
+}
+
+output "vm_nics" {
+  description = "The NICs of the Linux virtual machines"
+  value       = values(azurerm_network_interface.nic)[*].id
 }

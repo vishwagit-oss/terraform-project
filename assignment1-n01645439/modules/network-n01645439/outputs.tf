@@ -18,3 +18,7 @@ output "virtual_network_name" {
   value       = azurerm_virtual_network.vnet.name
 }
 
+output "subnet_name" {
+  description = "The name of the Subnet."
+  value       = azurerm_subnet.subnet.name
+}
